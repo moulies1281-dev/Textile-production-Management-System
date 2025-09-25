@@ -1,0 +1,7 @@
+{
+  "name": "Mobile Supported RC Tex - Textile Production Management",
+  "description": "A modern, sleek dashboard UI to digitize and manage textile production for RC Tex. Track weavers, production, yarn stock, loans, and generate reports for a streamlined workflow.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
