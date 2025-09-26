@@ -86,33 +86,46 @@ const WeaverManagement: React.FC<WeaverManagementProps> = ({ weavers, setWeavers
     finalFormData.rentalPeriod = undefined;
   }
 
-  // We will handle the "edit" case later.
   if (editingWeaver) {
     alert('Updating weavers is not yet implemented.');
     handleCloseModal();
     return;
   }
-
-  // This is the new logic for CREATING a weaver.
+  
   try {
-    // Send the form data to our new Netlify Function.
-    const response = await fetch('/.netlify/functions/addWeaver', {
+    // We now send the POST request to the SAME URL we use for reading data.
+    const response = await fetch('/.netlify/functions/supabase/weavers', { // <-- THIS URL IS THE ONLY CHANGE
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(finalFormData),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to save weaver to the database');
+      throw new Error('Failed to save the weaver');
     }
 
-    // Get the new weaver that was created in the database (it now has a real ID).
     const newWeaverFromDB = await response.json();
+    
+    // The app will simply re-fetch the whole list to show the new weaver,
+    // so we can just close the modal. For a faster UI, we can add it manually.
+    // Let's add the newly created weaver to our state to see it instantly.
+    // We need to translate the response from snake_case to camelCase
+    const newWeaverForState = {
+        id: newWeaverFromDB.id,
+        createdAt: newWeaverFromDB.created_at,
+        name: newWeaverFromDB.name,
+        contact: newWeaverFromDB.contact,
+        joinDate: newWeaverFromDB.join_date,
+        loomNumber: newWeaverFromDB.loom_number,
+        loomType: newWeaverFromDB.loom_type,
+        wageType: newWeaverFromDB.wage_type,
+        rate: newWeaverFromDB.rate,
+        rentalCost: newWeaverFromDB.rental_cost,
+        rentalPeriod: newWeaverFromDB.rental_period,
+        designAllocations: newWeaverFromDB.design_allocations
+    };
 
-    // Add the new weaver to the list you see on the screen, so it updates instantly.
-    setWeavers(currentWeavers => [...currentWeavers, newWeaverFromDB]);
+    setWeavers(currentWeavers => [...currentWeavers, newWeaverForState]);
     logAction('Created', 'Weavers', `Created weaver: ${newWeaverFromDB.name}`);
 
   } catch (error) {
