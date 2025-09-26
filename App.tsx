@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { UserRole, Weaver, ProductionLog, Loan, Design, Repayment, RentalPayment, AuditLog, Theme } from './types';
-import { initialWeavers, initialProductionLogs, initialLoans, initialDesigns, initialRepayments, initialRentalPayments } from './constants';
+import { initialProductionLogs, initialLoans, initialDesigns, initialRepayments, initialRentalPayments } from './constants';
 import DrawerMenu from './components/DrawerMenu';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
