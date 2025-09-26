@@ -1,0 +1,17 @@
+# This is the master configuration file for your Netlify site.
+
+[build]
+  # This command builds your React app for production.
+  command = "npm run build"
+  
+  # The folder where the finished site is placed. For Vite projects, it's "dist".
+  publish = "dist"
+  
+  # The folder where Netlify can find your serverless functions.
+  functions = "netlify/functions"
+
+# This section helps the `netlify dev` command work correctly on your computer.
+[dev]
+  command = "npm run dev"
+  port = 3000
+  publish = "dist"
