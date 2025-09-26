@@ -1,39 +1,49 @@
 // netlify/functions/supabase/supabase.js
-
 const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async function (event) {
-  // Get the database keys from Netlify's environment variables
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
-
-  // Make a connection to the Supabase database
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  // Figure out which table the app is asking for from the URL
-  // e.g., /.netlify/functions/supabase/weavers -> extracts "weavers"
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
   const pathParts = event.path.split('/');
   const tableName = pathParts[pathParts.length - 1];
 
   try {
-    // Fetch all columns (*) from the requested table
     const { data, error } = await supabase.from(tableName).select('*');
+    if (error) throw error;
 
-    if (error) {
-      throw error;
+    // --- TRANSLATOR ---
+    // If the data is for weavers, translate the keys to camelCase for the app.
+    if (tableName === 'weavers') {
+      const translatedData = data.map(weaver => ({
+        id: weaver.id,
+        createdAt: weaver.created_at,
+        name: weaver.name,
+        contact: weaver.contact,
+        joinDate: weaver.join_date,
+        loomNumber: weaver.loom_number,
+        loomType: weaver.loom_type,
+        wageType: weaver.wage_type,
+        rate: weaver.rate,
+        rentalCost: weaver.rental_cost,
+        rentalPeriod: weaver.rental_period,
+        designAllocations: weaver.design_allocations
+      }));
+      
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ data: translatedData }), // Send the translated data
+      };
     }
 
-    // Send the data back successfully
+    // For all other tables, send the data as is for now.
     return {
       statusCode: 200,
-      body: JSON.stringify({ data }), // Wrap the data in a "data" object
+      body: JSON.stringify({ data }),
     };
 
   } catch (error) {
-    console.error(`Error fetching from table ${tableName}:`, error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: `Failed to fetch data from ${tableName}` }),
+      body: JSON.stringify({ error: error.message }),
     };
   }
 };
