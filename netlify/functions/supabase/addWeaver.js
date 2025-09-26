@@ -1,5 +1,4 @@
 // netlify/functions/addWeaver.js
-const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async function(event, context) {
   if (event.httpMethod !== 'POST') {
