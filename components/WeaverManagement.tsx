@@ -78,26 +78,51 @@ const WeaverManagement: React.FC<WeaverManagementProps> = ({ weavers, setWeavers
     setFormData(prev => ({ ...prev, designAllocations: prev.designAllocations.filter((_, i) => i !== index) }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const finalFormData = { ...formData };
-    if (finalFormData.loomType === 'Own') {
-        finalFormData.rentalCost = undefined;
-        finalFormData.rentalPeriod = undefined;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const finalFormData = { ...formData };
+  if (finalFormData.loomType === 'Own') {
+    finalFormData.rentalCost = undefined;
+    finalFormData.rentalPeriod = undefined;
+  }
 
-    if (editingWeaver) {
-      const updatedWeaver = { ...editingWeaver, ...finalFormData };
-      setWeavers(weavers.map(w => w.id === editingWeaver.id ? updatedWeaver : w));
-      logAction('Updated', 'Weavers', `Updated weaver ${finalFormData.name}.`);
-    } else {
-      const newWeaver = { id: Date.now(), ...finalFormData };
-      setWeavers([...weavers, newWeaver]);
-      logAction('Created', 'Weavers', `Created weaver: ${newWeaver.name}`);
-    }
+  // We will handle the "edit" case later.
+  if (editingWeaver) {
+    alert('Updating weavers is not yet implemented.');
     handleCloseModal();
-  };
+    return;
+  }
 
+  // This is the new logic for CREATING a weaver.
+  try {
+    // Send the form data to our new Netlify Function.
+    const response = await fetch('/.netlify/functions/addWeaver', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(finalFormData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save weaver to the database');
+    }
+
+    // Get the new weaver that was created in the database (it now has a real ID).
+    const newWeaverFromDB = await response.json();
+
+    // Add the new weaver to the list you see on the screen, so it updates instantly.
+    setWeavers(currentWeavers => [...currentWeavers, newWeaverFromDB]);
+    logAction('Created', 'Weavers', `Created weaver: ${newWeaverFromDB.name}`);
+
+  } catch (error) {
+    console.error('Error submitting weaver:', error);
+    alert('Could not save the weaver. Please try again.');
+  }
+
+  handleCloseModal();
+};
+  
   const handleDelete = (weaverToDelete: Weaver) => {
     if (window.confirm(`Are you sure you want to delete ${weaverToDelete.name}?`)) {
         setWeavers(weavers.filter(w => w.id !== weaverToDelete.id));
