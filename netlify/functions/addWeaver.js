@@ -22,7 +22,7 @@ exports.handler = async function(event, context) {
     design_allocations: weaverDataFromApp.designAllocations, // Translated
   };
 
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+  const { supabase } = context.clientContext.supabase;
 
   try {
     // Now we insert the translated data
