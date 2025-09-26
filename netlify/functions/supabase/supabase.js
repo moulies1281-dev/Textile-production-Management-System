@@ -1,7 +1,7 @@
 // netlify/functions/supabase/supabase.js
 
-exports.handler = async function (event) {
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+exports.handler = async function (event, context) { // <-- add context here
+  const { supabase } = context.clientContext.supabase;
   const pathParts = event.path.split('/');
   const tableName = pathParts[pathParts.length - 1];
 
