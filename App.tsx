@@ -28,7 +28,7 @@ const App: React.FC = () => {
   const [userRole, setUserRole] = useState<UserRole>(UserRole.Admin);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   
-  const [weavers, setWeavers] = useState<Weaver[]>(initialWeavers);
+  const [weavers, setWeavers] = useState<Weaver[]>([]);
   const [productionLogs, setProductionLogs] = useState<ProductionLog[]>(initialProductionLogs);
   const [loans, setLoans] = useState<Loan[]>(initialLoans);
   const [designs, setDesigns] = useState<Design[]>(initialDesigns);
@@ -39,7 +39,35 @@ const App: React.FC = () => {
   const [showSyncNotification, setShowSyncNotification] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'light');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
+useEffect(() => {
+  // This is the code that will fetch your weavers from the database
+  const fetchWeavers = async () => {
+    try {
+      // This special URL calls the function that the Netlify Integration created for us.
+      // It specifically asks for the 'weavers' table.
+      const response = await fetch('/.netlify/functions/supabase/weavers');
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch weavers from the server');
+      }
+
+      const result = await response.json();
+      
+      // The integration sends the data inside a property called "data"
+      // We take that list and update our app's state
+      setWeavers(result.data);
+
+    } catch (error) {
+      // If something goes wrong, we'll see an error message in the browser's console
+      console.error("Error fetching weavers:", error);
+    }
+  };
+
+  // This line runs the fetchWeavers function as soon as the app loads
+  fetchWeavers();
+}, []); // The empty [] means this code only runs one time.
+    
   useEffect(() => {
       const root = window.document.documentElement;
       if (theme === 'dark') {
